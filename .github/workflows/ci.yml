@@ -1,0 +1,53 @@
+# Workflow 名（GitHub Actions 页面显示）
+name: CI Pipeline
+
+# 触发条件
+on:
+  push:
+    branches: [ main, develop ]        # push 到 main 或 develop 时触发
+  pull_request:
+    branches: [ main, develop ]        # PR 创建/更新时触发
+
+jobs:
+  # ===== Job 1：后端（Java + Maven）构建 =====
+  backend-ci:
+    runs-on: ubuntu-latest             # 在 Ubuntu 环境运行
+
+    steps:
+      # 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 安装 Java 17（Temurin 发行版）
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      # 使用 Maven 构建（跳过测试）
+      - name: Build with Maven
+        run: |
+          cd backend
+          ./mvnw clean package -DskipTests
+
+  # ===== Job 2：前端（Node + npm）构建 =====
+  frontend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 拉取代码
+      - uses: actions/checkout@v4
+
+      # 安装 Node.js 18
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # 安装依赖并打包
+      - name: Install & Build
+        run: |
+          cd frontend
+          npm install
+          npm run build
